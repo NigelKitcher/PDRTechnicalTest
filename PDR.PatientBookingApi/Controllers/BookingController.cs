@@ -90,6 +90,21 @@ namespace PDR.PatientBookingApi.Controllers
             return StatusCode(200);
         }
 
+        [HttpDelete("{bookingId}")]
+        public IActionResult CancelBooking(Guid bookingId)
+        {
+            var booking = _context.Order.FirstOrDefault(x => x.Id == bookingId);
+
+            if (booking == null)
+            {
+                return StatusCode(404);
+            }
+
+            _context.Order.Remove(booking);
+            _context.SaveChanges();
+            return StatusCode(200);
+        }
+
         public class NewBooking
         {
             public Guid Id { get; set; }
