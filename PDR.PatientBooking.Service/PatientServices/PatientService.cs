@@ -8,6 +8,7 @@ using PDR.PatientBooking.Service.PatientServices.Validation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using PDR.PatientBooking.Service.Providers;
 
 namespace PDR.PatientBooking.Service.PatientServices
 {
@@ -15,11 +16,13 @@ namespace PDR.PatientBooking.Service.PatientServices
     {
         private readonly PatientBookingContext _context;
         private readonly IAddPatientRequestValidator _validator;
+        private readonly ITimeProvider _timeProvider;
 
-        public PatientService(PatientBookingContext context, IAddPatientRequestValidator validator)
+        public PatientService(PatientBookingContext context, IAddPatientRequestValidator validator, ITimeProvider timeProvider)
         {
             _context = context;
             _validator = validator;
+            _timeProvider = timeProvider;
         }
 
         public void AddPatient(AddPatientRequest request)
@@ -40,7 +43,7 @@ namespace PDR.PatientBooking.Service.PatientServices
                 DateOfBirth = request.DateOfBirth,
                 Orders = new List<Order>(),
                 ClinicId = request.ClinicId,
-                Created = DateTime.UtcNow
+                Created = _timeProvider.UtcNow
             });
 
             _context.SaveChanges();

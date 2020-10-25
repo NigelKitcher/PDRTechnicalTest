@@ -14,6 +14,7 @@ using PDR.PatientBooking.Service.PatientServices;
 using PDR.PatientBooking.Service.PatientServices.Requests;
 using PDR.PatientBooking.Service.PatientServices.Responses;
 using PDR.PatientBooking.Service.PatientServices.Validation;
+using PDR.PatientBooking.Service.Providers;
 using PDR.PatientBooking.Service.Validation;
 
 namespace PDR.PatientBooking.Service.Tests.PatientServices
@@ -26,6 +27,7 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices
 
         private PatientBookingContext _context;
         private Mock<IAddPatientRequestValidator> _validator;
+        private Mock<ITimeProvider> _timeProvider;
 
         private PatientService _patientService;
 
@@ -42,6 +44,7 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices
             // Mock setup
             _context = new PatientBookingContext(new DbContextOptionsBuilder<PatientBookingContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
             _validator = _mockRepository.Create<IAddPatientRequestValidator>();
+            _timeProvider = _mockRepository.Create<ITimeProvider>();
 
             // Mock default
             SetupMockDefaults();
@@ -49,7 +52,8 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices
             // Sut instantiation
             _patientService = new PatientService(
                 _context,
-                _validator.Object
+                _validator.Object,
+                _timeProvider.Object
             );
         }
 
@@ -57,6 +61,7 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices
         {
             _validator.Setup(x => x.ValidateRequest(It.IsAny<AddPatientRequest>()))
                 .Returns(new PdrValidationResult(true));
+            _timeProvider.Setup(x => x.UtcNow).Returns(new DateTime(2020, 10, 25));
         }
 
         [Test]
@@ -102,7 +107,7 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices
                 DateOfBirth = request.DateOfBirth,
                 Orders = new List<Order>(),
                 ClinicId = request.ClinicId,
-                Created = DateTime.UtcNow
+                Created = _timeProvider.Object.UtcNow
             };
 
             //act
