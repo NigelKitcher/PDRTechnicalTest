@@ -19,6 +19,8 @@ namespace PDR.PatientBooking.Service.PatientServices.Validation
         {
             var result = new PdrValidationResult(true);
 
+            ValidateEmailAddress(request, ref result);
+
             if (MissingRequiredFields(request, ref result))
                 return result;
 
@@ -52,6 +54,14 @@ namespace PDR.PatientBooking.Service.PatientServices.Validation
             }
 
             return false;
+        }
+
+        private void ValidateEmailAddress(AddPatientRequest request, ref PdrValidationResult result)
+        {
+            if (EmailValidator.IsValidEmail(request.Email)) return;
+
+            result.Errors.Add("Email must be a valid email address");
+            result.PassedValidation = false;
         }
 
         private bool PatientAlreadyInDb(AddPatientRequest request, ref PdrValidationResult result)
