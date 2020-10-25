@@ -12,5 +12,15 @@ namespace PDR.PatientBooking.Data.Models
         public virtual long DoctorId { get; set; }
         public virtual Patient Patient { get; set; }
         public virtual Doctor Doctor { get; set; }
+
+        private bool IsInRange(DateTime date)
+        {
+            return date >= StartTime && date <= EndTime;
+        }
+
+        public bool Overlaps(Order appointment)
+        {
+            return IsInRange(appointment.StartTime) || IsInRange(appointment.EndTime);
+        }
     }
 }

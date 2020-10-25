@@ -72,6 +72,12 @@ namespace PDR.PatientBookingApi.Controllers
                 SurgeryType = (int)bookingSurgeryType
             };
 
+            if (bookingDoctor.Orders.Any(x => x.Overlaps(myBooking)))
+            {
+                return new ObjectResult("Requested booking time overlaps existing time for the requested doctor")
+                    { StatusCode = 400 };
+            }
+
             _context.Order.AddRange(new List<Order> { myBooking });
             _context.SaveChanges();
 
