@@ -14,6 +14,7 @@ using PDR.PatientBooking.Service.Validation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using PDR.PatientBooking.Service.Providers;
 
 namespace PDR.PatientBooking.Service.Tests.DoctorServices
 {
@@ -25,6 +26,7 @@ namespace PDR.PatientBooking.Service.Tests.DoctorServices
 
         private PatientBookingContext _context;
         private Mock<IAddDoctorRequestValidator> _validator;
+        private Mock<ITimeProvider> _timeProvider;
 
         private DoctorService _doctorService;
 
@@ -41,6 +43,7 @@ namespace PDR.PatientBooking.Service.Tests.DoctorServices
             // Mock setup
             _context = new PatientBookingContext(new DbContextOptionsBuilder<PatientBookingContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
             _validator = _mockRepository.Create<IAddDoctorRequestValidator>();
+            _timeProvider = _mockRepository.Create<ITimeProvider>();
 
             // Mock default
             SetupMockDefaults();
@@ -48,7 +51,8 @@ namespace PDR.PatientBooking.Service.Tests.DoctorServices
             // Sut instantiation
             _doctorService = new DoctorService(
                 _context,
-                _validator.Object
+                _validator.Object,
+                _timeProvider.Object
             );
         }
 
@@ -56,6 +60,7 @@ namespace PDR.PatientBooking.Service.Tests.DoctorServices
         {
             _validator.Setup(x => x.ValidateRequest(It.IsAny<AddDoctorRequest>()))
                 .Returns(new PdrValidationResult(true));
+            _timeProvider.Setup(x => x.UtcNow).Returns(new DateTime(2020, 10, 25));
         }
 
         [Test]
@@ -100,7 +105,7 @@ namespace PDR.PatientBooking.Service.Tests.DoctorServices
                 Email = request.Email,
                 DateOfBirth = request.DateOfBirth,
                 Orders = new List<Order>(),
-                Created = DateTime.UtcNow
+                Created = _timeProvider.Object.UtcNow
             };
 
             //act
