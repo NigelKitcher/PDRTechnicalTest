@@ -51,6 +51,12 @@ namespace PDR.PatientBookingApi.Controllers
         [HttpPost()]
         public IActionResult AddBooking(NewBooking newBooking)
         {
+            if (!newBooking.IsValid())
+            {
+                return new ObjectResult("Bookings can not be made for a time in the past")
+                    { StatusCode = 400 };
+            }
+
             var bookingId = new Guid();
             var bookingStartTime = newBooking.StartTime;
             var bookingEndTime = newBooking.EndTime;
@@ -91,6 +97,11 @@ namespace PDR.PatientBookingApi.Controllers
             public DateTime EndTime { get; set; }
             public long PatientId { get; set; }
             public long DoctorId { get; set; }
+
+            public bool IsValid()
+            {
+                return StartTime >= DateTime.UtcNow || EndTime <= DateTime.UtcNow;
+            }
         }
 
         private static MyOrderResult UpdateLatestBooking(List<Order> bookings2, int i)
